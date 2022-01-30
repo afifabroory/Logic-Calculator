@@ -5,64 +5,64 @@
 %option caseless
 %option noyywrap
 
-VAR					[a-z][a-z0-9_]*
+VAR                 [a-z][a-z0-9_]*
 
-CONJ				"&"|"*"|"and"|"dan"
+CONJ                "&"|"*"|"and"|"dan"
 
-DISJ				"|"|"+"|"or"|"atau"
+DISJ                "|"|"+"|"or"|"atau"
 
-NEG					"~"|"!"|"not"|"bukan"
+NEG                 "~"|"!"|"not"|"bukan"
 
-EQUV				"="|"<->"
+EQUV                "="|"<->"
 
-IMP					"->"|">"
-IF					"if"|"jika"
-THEN				"then"|"maka"
+IMP                 "->"|">"
+IF                  "if"|"jika"
+THEN                "then"|"maka"
 
-TRUE				"true"|"benar"|"1"
-FALSE				"false"|"salah"|"0"
+TRUE                "true"|"benar"|"1"
+FALSE               "false"|"salah"|"0"
 
-INVALID_TRUTH		"1"[a-z]+|"0"[a-z]+
+INVALID_TRUTH       "1"[a-z]+|"0"[a-z]+
 
-OGROUP				"("|"{"|"["
-CGROUP				")"|"}"|"]"
+OGROUP              "("|"{"|"["
+CGROUP              ")"|"}"|"]"
 
-DIGIT				[0-9]+
-WHITESPACE			[ \t]
+DIGIT               [0-9]+
+WHITESPACE          [ \t]
 EOL                 \n
-IGNORE_TOKEN		.
+IGNORE_TOKEN        .
 
 %%
 
-{CONJ}				{ return CONJ; }
+{CONJ}              { return CONJ; }
 
-{DISJ}				{ return DISJ; }
+{DISJ}              { return DISJ; }
 
-{NEG}				{ return NEG; }
+{NEG}               { return NEG; }
 
-{EQUV}				{ return EQUV; }
+{EQUV}              { return EQUV; }
 
-{IMP}				{ return IMP; }
+{IMP}               { return IMP; }
 
-{IF}				{ return IF; }
+{IF}                { return IF; }
 
-{THEN}				{ return THEN; }
+{THEN}              { return THEN; }
 
-{OGROUP}			{ return '('; }
+{OGROUP}            { return '('; }
 
-{CGROUP}			{ return ')'; }
+{CGROUP}            { return ')'; }
 
-{INVALID_TRUTH}		/* Ignore */
+{INVALID_TRUTH}     /* Ignore */
 
-{TRUE}				{ yylval = 1; return CONST; }
+{TRUE}              { yylval = 1; return CONST; }
 
-{FALSE}				{ yylval = 0; return CONST; }
+{FALSE}             { yylval = 0; return CONST; }
 
-{VAR}				{ return VAR; }
+{VAR}               { return VAR; }
 
-{DIGIT}				/* Ignore */
-{WHITESPACE}		/* Ignore */
+{DIGIT}             /* Ignore */
+{WHITESPACE}        /* Ignore */
 {EOL}               { return EOL; }
-{IGNORE_TOKEN}		/* Ignore */
+{IGNORE_TOKEN}      /* Ignore */
 
 %%

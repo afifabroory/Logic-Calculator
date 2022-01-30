@@ -25,36 +25,35 @@ void yyerror(const char* s);
 %precedence THEN
 
 %%
-Expr	: Form EOL			{  printf("Result: %d\n", $1); }
-		| Expr EOL
-		| // ε
-		;
-		 
-Form	: Binary
-		;
+Expr    : Form EOL              {  printf("Result: %d\n", $1); }
+        | Expr EOL
+        | // ε
+        ;
+         
+Form    : Binary
+        ;
 
-Binary	: Binary DISJ Atomic	{ $$ = $1 || $3; }
-		| Binary CONJ Atomic	{ $$ = $1 && $3; }
-		| Binary EQUV Atomic	{ $$ = !$1 || $3 && !$3 || $1; }
-		| Imply
-		| CImply
-		| Atomic
-		;		
+Binary  : Binary DISJ Atomic    { $$ = $1 || $3; }
+        | Binary CONJ Atomic    { $$ = $1 && $3; }
+        | Binary EQUV Atomic    { $$ = !$1 || $3 && !$3 || $1; }
+        | Imply
+        | CImply
+        | Atomic
+        ;        
 
-Imply	: Atomic IMP Atomic		{ $$ = !$1 || $3; }
-		| IF Atomic THEN Atomic	{ $$ = !$2 || $4; }
-		;
+Imply   : Atomic IMP Atomic     { $$ = !$1 || $3; }
+        | IF Atomic THEN Atomic { $$ = !$2 || $4; }
+        ;
 
-CImply	: Atomic IF Atomic		{ $$ = !$3 || $1; }
-		;
+CImply  : Atomic IF Atomic      { $$ = !$3 || $1; }
+        ;
 
-Atomic	: '(' Form ')'		{ $$ = $2; }
-		| NEG VAR			{ $$ = $2; }
-		| NEG CONST			{ $$ = !$2; }
-		| VAR
-		| CONST
-		;
-
+Atomic  : '(' Form ')'          { $$ = $2; }
+        | NEG VAR               { $$ = $2; }
+        | NEG CONST             { $$ = !$2; }
+        | VAR
+        | CONST
+        ;
 %%
 
 void yyerror (char const *s) {
@@ -62,5 +61,5 @@ void yyerror (char const *s) {
 }
 
 int main () {
-	yyparse ();
+    yyparse ();
 }
