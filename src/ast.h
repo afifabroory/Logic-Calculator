@@ -2,9 +2,9 @@
 #define _TREE_H
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 typedef enum OPType {
-    NONE,
     CONJ,
     DISJ,
     EQUV,
@@ -23,21 +23,21 @@ struct _Data {
     union {
         OPType op;
         bool val;
-        char *str;  // Identifier name
+        const char *str;  // Identifier name
     } value;
 };
 typedef struct _Data Data;
 
 struct _Tree {
-    Date *data;
+    Data *data;
     struct Node *left;
     struct Node *right;
 };
 typedef struct _Tree Tree;
 
-Tree CreateEmptyNode();
-Data CreateOptNode(OPType type);
-Data CraeteConstNode(bool value);
-Data CreateVarNode(const char *_str);
+Tree *CreateEmptyNode();
+Data *CreateOptNode(OPType type);
+Data *CraeteConstNode(bool value);
+Data *CreateVarNode(const char *_str);
 
 #endif
