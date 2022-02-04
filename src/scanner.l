@@ -13,11 +13,11 @@ DISJ                "|"|"+"|"or"|"atau"
 
 NEG                 "~"|"!"|"not"|"bukan"
 
-EQUV                "="|"<->"
-
-IMP                 "->"|">"
+IMP                 "->"|"=>"
 IF                  "if"|"jika"
 THEN                "then"|"maka"
+
+EQUV                "="|"<->"|"<=>"
 
 TRUE                "true"|"benar"|"1"
 FALSE               "false"|"salah"|"0"
@@ -28,8 +28,7 @@ OGROUP              "("|"{"|"["
 CGROUP              ")"|"}"|"]"
 
 DIGIT               [0-9]+
-WHITESPACE          [ \t]
-EOL                 \n
+WHITESPACE          [ \t\n]
 IGNORE_TOKEN        .
 
 %%
@@ -40,9 +39,9 @@ IGNORE_TOKEN        .
 
 {NEG}               { return NEG; }
 
-{EQUV}              { return EQUV; }
-
 {IMP}               { return IMP; }
+
+{EQUV}              { return EQUV; }
 
 {IF}                { return IF; }
 
@@ -62,7 +61,6 @@ IGNORE_TOKEN        .
 
 {DIGIT}             /* Ignore */
 {WHITESPACE}        /* Ignore */
-{EOL}               { return EOL; }
 {IGNORE_TOKEN}      /* Ignore */
 
 %%
