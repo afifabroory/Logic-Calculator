@@ -1,0 +1,4 @@
+#!/bin/sh
+gcc parser.c ../src/y.tab.c ../src/lex.yy.c
+./a.out
+rm a.out
