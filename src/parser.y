@@ -4,12 +4,17 @@
 #include <stdlib.h>
 
 extern int yylex();
-void yyerror(const char* s);
+extern void yy_scan_string(const char *str);
+void yyerror(int *results, const char* s);
 %}
+
+%parse-param {int *results}
+
+%define parse.error verbose
 
 %token EQUV
 %token IMP
-%token IF
+%token IF 
 %token THEN
 %token DISJ
 %token CONJ
@@ -19,13 +24,12 @@ void yyerror(const char* s);
 %token EOL
 
 %left IMP EQUV
+%nonassoc IF THEN
 %left CONJ DISJ
-%precedence NEG 
-%precedence IF 
-%precedence THEN
+%nonassoc NEG
 
 %%
-Form    : Binary EOL            {  printf("Result: %d\n", $1); }
+Form    : Binary                { *results = $1; }
         ;
 
 Binary  : Binary DISJ Binary    { $$ = $1 || $3; }
@@ -35,9 +39,9 @@ Binary  : Binary DISJ Binary    { $$ = $1 || $3; }
         | Atomic
         ;        
 
-Imply   : Binary IMP Atomic     { $$ = !$1 || $3; }
-        | IF Binary THEN Atomic { $$ = !$2 || $4; }
-        | Binary IF Atomic      { $$ = !$3 || $1; }
+Imply   : Binary IMP Binary     { $$ = !$1 || $3; }
+        | IF Binary THEN Binary { $$ = !$2 || $4; }
+        | Binary IF Binary      { $$ = !$3 || $1; }
         ;
 
 Atomic  : NEG Atomic            { $$ = !$2; }
@@ -47,10 +51,6 @@ Atomic  : NEG Atomic            { $$ = !$2; }
         ;
 %%
 
-void yyerror(char const *s) {
+void yyerror(int *results, char const *s) {
   fprintf(stderr, "%s\n", s);
-}
-
-int main() {
-    yyparse();
 }
