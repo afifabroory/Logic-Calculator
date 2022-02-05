@@ -44,8 +44,6 @@ Binary  : Binary DISJ Binary    { $$ = CreateOptNode(OP_DISJ, $1, $3); }
         ;        
 
 Imply   : Binary IMP Binary     { $$ = CreateOptNode(OP_IMP, $1, $3); }
-        | IF Binary THEN Binary { $$ = CreateOptNode(OP_IMP, $2, $4); }
-        | Binary IF Binary      { $$ = CreateOptNode(OP_IMP, $3, $1); }
         ;
 
 Atomic  : NEG Atomic            { $$ = CreateOptNode(OP_NEG, $2, NULL); }

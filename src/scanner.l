@@ -44,9 +44,9 @@ IGNORE_TOKEN        .
 
 {EQUV}              { return EQUV; }
 
-{IF}                { return IF; }
+{IF}                /*{ return IF; }*/
 
-{THEN}              { return THEN; }
+{THEN}              /*{ return THEN; }*/
 
 {OGROUP}            { return '('; }
 
