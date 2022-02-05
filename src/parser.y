@@ -23,7 +23,7 @@ extern void yyerror(Node **tree, const char *s);
 %token DISJ CONJ
 %token NEG CONST VAR
 
-%type <AST> Binary Imply Atomic
+%type <AST> Equivalance Implication Disjunction Conjunction Negation Atomic
 %type <t_val> CONST
 %type <id> VAR
 
@@ -33,24 +33,33 @@ extern void yyerror(Node **tree, const char *s);
 %nonassoc NEG
 
 %%
-Form    : Binary                { *tree = $1; }
-        ;
+Formula    : Equivalance                  { *tree = $1; }
+           ;
 
-Binary  : Binary DISJ Binary    { $$ = CreateOptNode(OP_DISJ, $1, $3); }
-        | Binary CONJ Binary    { $$ = CreateOptNode(OP_CONJ, $1, $3); }
-        | Binary EQUV Binary    { $$ = CreateOptNode(OP_EQUV, $1, $3); }
-        | Imply
-        | Atomic
-        ;        
+Equivalance: Equivalance EQUV Implication { $$ = CreateOptNode(OP_EQUV, $1, $3); }
+           | Implication
+           ;
 
-Imply   : Binary IMP Binary     { $$ = CreateOptNode(OP_IMP, $1, $3); }
-        ;
+Implication: Implication IMP Disjunction  { $$ = CreateOptNode(OP_IMP, $1, $3); }
+           | Disjunction
+           ;
 
-Atomic  : NEG Atomic            { $$ = CreateOptNode(OP_NEG, $2, NULL); }
-        |'(' Binary ')'         { $$ = $2; }
-        | VAR                   { $$ = CreateVarNode("test"); }
-        | CONST                 { $$ = CreateConstNode($1); }
-        ;
+Disjunction: Disjunction DISJ Conjunction { $$ = CreateOptNode(OP_DISJ, $1, $3); }
+           | Conjunction
+           ;
+
+Conjunction: Conjunction CONJ Negation       { $$ = CreateOptNode(OP_CONJ, $1, $3); }
+           | Negation
+           ;
+
+Negation   : NEG Negation                   { $$ = CreateOptNode(OP_NEG, $2, NULL); }
+           | Atomic
+           ;
+
+Atomic     : VAR                          { $$ = CreateVarNode($1); }
+           | CONST                        { $$ = CreateConstNode($1); }
+           | '(' Equivalance ')'          { $$ = $2; }
+           ;
 %%
 
 void yyerror(Node **tree, char const *s) {
