@@ -1,4 +1,5 @@
 %{
+#include "ast.h"
 #include "y.tab.h"
 %}
 
@@ -53,11 +54,11 @@ IGNORE_TOKEN        .
 
 {INVALID_TRUTH}     /* Ignore */
 
-{TRUE}              { yylval = 1; return CONST; }
+{TRUE}              { yylval.t_val = true; return CONST; }
 
-{FALSE}             { yylval = 0; return CONST; }
+{FALSE}             { yylval.t_val = false; return CONST; }
 
-{VAR}               { return VAR; }
+{VAR}               { yylval.id = yytext; return VAR; }
 
 {DIGIT}             /* Ignore */
 {WHITESPACE}        /* Ignore */

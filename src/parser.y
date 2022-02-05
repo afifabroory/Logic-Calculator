@@ -1,27 +1,31 @@
 %{
-
+#include "ast.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <assert.h>
 
 extern int yylex();
 extern void yy_scan_string(const char *str);
-void yyerror(int *results, const char* s);
+extern void yyerror(Node **tree, const char *s);
 %}
 
-%parse-param {int *results}
-
+%parse-param {Node **tree}
 %define parse.error verbose
 
-%token EQUV
-%token IMP
-%token IF 
-%token THEN
-%token DISJ
-%token CONJ
-%token NEG
-%token CONST
-%token VAR
-%token EOL
+%union { 
+    Node *AST; 
+    bool t_val;
+    const char *id;
+}
+
+%token EQUV IMP IF THEN
+%token DISJ CONJ
+%token NEG CONST VAR
+
+%type <AST> Binary Imply Atomic
+%type <t_val> CONST
+%type <id> VAR
 
 %left IMP EQUV
 %nonassoc IF THEN
@@ -29,28 +33,28 @@ void yyerror(int *results, const char* s);
 %nonassoc NEG
 
 %%
-Form    : Binary                { *results = $1; }
+Form    : Binary                { *tree = $1; }
         ;
 
-Binary  : Binary DISJ Binary    { $$ = $1 || $3; }
-        | Binary CONJ Binary    { $$ = $1 && $3; }
-        | Binary EQUV Binary    { $$ = (!$1 || $3) && ($1 || !$3); }
+Binary  : Binary DISJ Binary    { $$ = CreateOptNode(OP_DISJ, $1, $3); }
+        | Binary CONJ Binary    { $$ = CreateOptNode(OP_CONJ, $1, $3); }
+        | Binary EQUV Binary    { $$ = CreateOptNode(OP_EQUV, $1, $3); }
         | Imply
         | Atomic
         ;        
 
-Imply   : Binary IMP Binary     { $$ = !$1 || $3; }
-        | IF Binary THEN Binary { $$ = !$2 || $4; }
-        | Binary IF Binary      { $$ = !$3 || $1; }
+Imply   : Binary IMP Binary     { $$ = CreateOptNode(OP_IMP, $1, $3); }
+        | IF Binary THEN Binary { $$ = CreateOptNode(OP_IMP, $2, $4); }
+        | Binary IF Binary      { $$ = CreateOptNode(OP_IMP, $3, $1); }
         ;
 
-Atomic  : NEG Atomic            { $$ = !$2; }
+Atomic  : NEG Atomic            { $$ = CreateOptNode(OP_NEG, $2, NULL); }
         |'(' Binary ')'         { $$ = $2; }
-        | VAR
-        | CONST
+        | VAR                   { $$ = CreateVarNode("test"); }
+        | CONST                 { $$ = CreateConstNode($1); }
         ;
 %%
 
-void yyerror(int *results, char const *s) {
+void yyerror(Node **tree, char const *s) {
   fprintf(stderr, "%s\n", s);
 }
