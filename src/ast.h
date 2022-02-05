@@ -4,40 +4,34 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-typedef enum OPType {
-    CONJ,
-    DISJ,
-    EQUV,
-    IMP,
-    NEG
+typedef enum {
+    OP_CONJ,
+    OP_DISJ,
+    OP_EQUV,
+    OP_IMP,
+    OP_NEG
 } OPType;
 
-typedef enum TokenType {
-    OP,
-    VAR,
-    CONST
-} TokenType;
+typedef enum {
+    NODE_OP,
+    NODE_VAR,
+    NODE_CONST
+} NodeType;
 
-struct _Data {
-    TokenType type;
+struct _Node {
+    NodeType type;
     union {
         OPType op;
-        bool val;
-        const char *str;  // Identifier name
-    } value;
+        bool t_val;
+        const char *str;
+    } val;
+    struct _Node *left, *right;
 };
-typedef struct _Data Data;
+typedef struct _Node Node;
 
-struct _Tree {
-    Data *data;
-    struct Node *left;
-    struct Node *right;
-};
-typedef struct _Tree Tree;
-
-Tree *CreateEmptyNode();
-Data *CreateOptNode(OPType type);
-Data *CraeteConstNode(bool value);
-Data *CreateVarNode(const char *_str);
+Node *CreateOptNode(OPType type, Node *left_node, Node *right_node);
+Node *CreateConstNode(bool value);
+Node *CreateVarNode(const char *_str);
+void FreeAST(Node *ast);
 
 #endif

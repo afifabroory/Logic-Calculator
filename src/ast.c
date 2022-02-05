@@ -1,35 +1,42 @@
 #include "ast.h"
 
-Tree *CreateEmptyNode() {
-    Tree *tree = malloc(sizeof(Tree));
-    tree->left = NULL;
-    tree->right = NULL;
+Node *CreateOptNode(OPType type, Node *left_node, Node *right_node) {
+    Node *t_node = malloc(sizeof(Node));
+    t_node->type = NODE_OP;
+    t_node->val.op = type;
 
-    return tree;
+    t_node->left = left_node;
+    t_node->right = right_node;
+
+    return t_node;
 }
 
-Data *CreateOptNode(OPType type) {
-    Data *data = malloc(sizeof(Data));
-    data->type = OP;
-    data->value.op = type;
-    return data;
+Node *CreateConstNode(bool value) {
+    Node *t_node = malloc(sizeof(Node));
+    t_node->type = NODE_CONST;
+    t_node->val.t_val = value;
+    
+    t_node->left = NULL;
+    t_node->right = NULL;
+    
+    return t_node;
 }
 
-Data *CreateConstNode(bool value) {
-    Data *data = malloc(sizeof(Data));
-    data->type = CONST;
-    data->value.val = value;
-    return data;
+Node *CreateVarNode(const char *_str) {
+    Node *t_node = malloc(sizeof(Node));
+    t_node->type = NODE_VAR;
+    t_node->val.str = _str;
+
+    t_node->left = NULL;
+    t_node->right = NULL;
+
+    return t_node;
 }
 
-Data *CreateVarNode(const char *_str) {
-    Data *data = malloc(sizeof(Data));
-    data->type = VAR;
-    data->value.str = _str;
-    return data;
-}
+void FreeAST(Node *ast) {
+    if (!ast) return;
 
-int main() {
-    Tree *syntaxTree = CreateEmptyNode();
-    syntaxTree->data = CreateVarNode("p");
+    FreeAST(ast->left);
+    FreeAST(ast->right);
+    free(ast);
 }
