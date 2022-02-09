@@ -1,7 +1,6 @@
 #!/bin/sh
-#gcc -O2 parser.c ../src/y.tab.c ../src/lex.yy.c -o parser
+gcc -g parser.c ../src/y.tab.c ../src/lex.yy.c ../src/ast.c -o parser
 gcc -g ast.c ../src/y.tab.c ../src/lex.yy.c ../src/ast.c -o ast
-#./parser
+./parser
 ./ast
-rm ast
-#rm parser ast
+rm parser ast

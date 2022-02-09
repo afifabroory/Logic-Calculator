@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 extern void yy_scan_string(const char *s);
 
@@ -26,177 +27,182 @@ int main() {
     implication_operator_test();
     equivalance_operator_test();
     precedence_operation_test();   
+
+    FreeAST(results);
+    results = NULL;
+    assert(results == NULL);
+
     printf("AST OK!\n");
 }
 
 void constant_remain_constant_test() {
-    yy_scan_string("1");
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p");
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left == NULL);
     assert(results->right == NULL);
-    assert(results->type == NODE_CONST);
-    assert(results->val.t_val == true);
+    assert(results->type == NODE_VAR);
+    assert(strcmp(results->val.str, "p") == 0);
     
-    yy_scan_string("0");
-    assert(yyparse(&results) == 0);
+    yy_scan_string("q");
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left == NULL);
     assert(results->right == NULL);
-    assert(results->type == NODE_CONST);
-    assert(results->val.t_val == false);
+    assert(results->type == NODE_VAR);
+    assert(strcmp(results->val.str, "q") == 0);
 }
 
 void negation_constant_test() {   
-    
-    // ¬T = F
-    yy_scan_string("~1"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("~p"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right == NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_NEG);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == true);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
 
-    // ¬F = T
-    yy_scan_string("~0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("~q"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right == NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_NEG);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == false);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "q") == 0);
 }
 
 void conjunction_operator_test() {
-    
-    // T ∧ T (True)
-    yy_scan_string("1 & 1"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p & 1"); 
+    assert(yyparse(NULL, &results) == 0);
 
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_CONJ);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == true);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
     assert(results->right->type == NODE_CONST);
     assert(results->right->val.t_val == true);
 
-    // F ∧ F (False)
-    yy_scan_string("0 & 0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("q & 0"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_CONJ);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == false);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "q") == 0);
     assert(results->right->type == NODE_CONST);
     assert(results->right->val.t_val == false);
 
-    // T ∧ F = F ∧ T (False)
-    yy_scan_string("1 & 0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p & q"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_CONJ);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == true);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == false);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
+    assert(results->right->type == NODE_VAR);
+    assert(strcmp(results->right->val.str, "q") == 0);
 
-    yy_scan_string("0 & 1"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("q & p"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_CONJ);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == false);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == true);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "q") == 0);
+    assert(results->right->type == NODE_VAR);
+    assert(strcmp(results->right->val.str, "p") == 0);
 }
 
 void disjunction_operator_test() {
-    
-    // T ∨ T (True)
-    yy_scan_string("1 | 1"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p | 1"); 
+    assert(yyparse(NULL, &results) == 0);
    
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_DISJ);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == true);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
     assert(results->right->type == NODE_CONST);
     assert(results->right->val.t_val == true);
 
-    // F ∨ F (False)
-    yy_scan_string("0 | 0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p | 0"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_DISJ);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == false);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
     assert(results->right->type == NODE_CONST);
     assert(results->right->val.t_val == false);
 
-    // T ∨ F = F ∨ T (True)
-    yy_scan_string("1 | 0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p | q"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_DISJ);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == true);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == false);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
+    assert(results->right->type == NODE_VAR);
+    assert(strcmp(results->right->val.str, "q") == 0);
 
-    yy_scan_string("0 | 1"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p | q"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_DISJ);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == false);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == true);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
+    assert(results->right->type == NODE_VAR);
+    assert(strcmp(results->right->val.str, "q") == 0);
 }
 
 void implication_operator_test() {    
 
-    // True
-    yy_scan_string("1 => 1"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p => 1"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_IMP);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == true);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
     assert(results->right->type == NODE_CONST);
     assert(results->right->val.t_val == true);
 
-    yy_scan_string("0 => 0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p => 0"); 
+    assert(yyparse(NULL, &results) == 0);
+    
+    assert(results->left != NULL);
+    assert(results->right != NULL);
+    assert(results->type == NODE_OP);
+    assert(results->val.op == OP_IMP);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
+    assert(results->right->type == NODE_CONST);
+    assert(results->right->val.t_val == false);
+
+    yy_scan_string("0 => p"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
@@ -204,24 +210,11 @@ void implication_operator_test() {
     assert(results->val.op == OP_IMP);
     assert(results->left->type == NODE_CONST);
     assert(results->left->val.t_val == false);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == false);
+    assert(results->right->type == NODE_VAR);
+    assert(strcmp(results->right->val.str, "p") == 0);
 
-    yy_scan_string("0 => 1"); 
-    assert(yyparse(&results) == 0);
-    
-    assert(results->left != NULL);
-    assert(results->right != NULL);
-    assert(results->type == NODE_OP);
-    assert(results->val.op == OP_IMP);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == false);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == true);
-
-    // False
-    yy_scan_string("1 => 0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("1 => p"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
@@ -229,59 +222,58 @@ void implication_operator_test() {
     assert(results->val.op == OP_IMP);
     assert(results->left->type == NODE_CONST);
     assert(results->left->val.t_val == true);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == false);
+    assert(results->right->type == NODE_VAR);
+    assert(strcmp(results->right->val.str, "p") == 0);
 }
 
 void equivalance_operator_test() {
     
     // True
-    yy_scan_string("1 <=> 1"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p <=> 1"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_EQUV);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == true);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
     assert(results->right->type == NODE_CONST);
     assert(results->right->val.t_val == true);
 
-    yy_scan_string("0 <=> 0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p <=> p"); 
+    assert(yyparse(NULL, &results) == 0);
 
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_EQUV);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == false);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == false);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
+    assert(results->right->type == NODE_VAR);
+    assert(strcmp(results->right->val.str, "p") == 0);
 
-    // False
-    yy_scan_string("0 <=> 1"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p <=> 1"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_EQUV);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == false);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
     assert(results->right->type == NODE_CONST);
     assert(results->right->val.t_val == true);
 
-    yy_scan_string("1 <=> 0"); 
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p <=> 0"); 
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
     assert(results->type == NODE_OP);
     assert(results->val.op == OP_EQUV);
-    assert(results->left->type == NODE_CONST);
-    assert(results->left->val.t_val == true);
+    assert(results->left->type == NODE_VAR);
+    assert(strcmp(results->left->val.str, "p") == 0);
     assert(results->right->type == NODE_CONST);
     assert(results->right->val.t_val == false);
 }
@@ -293,16 +285,16 @@ void precedence_operation_test() {
      *          / \
      *         ~   &
      *         |  / \
-     *         0 0   1
+     *         p q   r
      *
      *   AST Model in Scheme code:
      *   (or
-     *       (not #f)
-     *       (and #f #t)
+     *       (not p)
+     *       (and q r)
      *   )
      */
-    yy_scan_string("~0 | 0 & 1");
-    assert(yyparse(&results) == 0);
+    yy_scan_string("~p | q & r");
+    assert(yyparse(NULL, &results) == 0);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
@@ -316,8 +308,8 @@ void precedence_operation_test() {
 
     assert(results->left->left->left == NULL);
     assert(results->left->left->right == NULL);
-    assert(results->left->left->type == NODE_CONST);
-    assert(results->left->left->val.t_val == false);
+    assert(results->left->left->type == NODE_VAR);
+    assert(strcmp(results->left->left->val.str, "p") == 0);
  
     assert(results->right->left != NULL);
     assert(results->right->right != NULL);
@@ -326,13 +318,13 @@ void precedence_operation_test() {
 
     assert(results->right->left->left == NULL);
     assert(results->right->left->right == NULL);
-    assert(results->right->left->type == NODE_CONST);
-    assert(results->right->left->val.t_val == false);
+    assert(results->right->left->type == NODE_VAR);
+    assert(strcmp(results->right->left->val.str, "q") == 0);
 
     assert(results->right->right->left == NULL);
     assert(results->right->right->right == NULL);
-    assert(results->right->right->type == NODE_CONST);
-    assert(results->val.t_val == true);
+    assert(results->right->right->type == NODE_VAR);
+    assert(strcmp(results->right->right->val.str, "r") == 0);
 
     /*
      *              ~
@@ -341,19 +333,19 @@ void precedence_operation_test() {
      *             / \
      *             ~  &
      *             | / \
-     *             f f  t
+     *             p q  r
      *          
      *
      *   AST Model in Scheme Code:
      *   (not (or 
-     *            (not #f)
-     *            (and #f #t)
+     *            (not #p)
+     *            (and #q #r)
      *        )
      *   ) 
      *
      */
-    yy_scan_string("~(~0 | 0 & 1)");
-    assert(yyparse(&results) == 0);
+    yy_scan_string("~(~p | q & r)");
+    assert(yyparse(NULL, &results) == 0);
 
     assert(results->left != NULL);
     assert(results->right == NULL);
@@ -377,44 +369,114 @@ void precedence_operation_test() {
 
     assert(results->left->left->left->left == NULL);
     assert(results->left->left->left->right == NULL);
-    assert(results->left->left->left->type == NODE_CONST);
-    assert(results->left->left->left->val.t_val == false);
+    assert(results->left->left->left->type == NODE_VAR);
+    assert(strcmp(results->left->left->left->val.str, "p") == 0);
 
     assert(results->left->right->left->left == NULL);
     assert(results->left->right->left->right == NULL);
-    assert(results->left->right->left->type == NODE_CONST); 
-    assert(results->left->right->left->val.t_val == false);
+    assert(results->left->right->left->type == NODE_VAR);
+    assert(strcmp(results->left->right->left->val.str, "q") == 0);
 
     assert(results->left->right->right->left == NULL);
     assert(results->left->right->right->right == NULL);
-    assert(results->left->right->right->type == NODE_CONST);
-    assert(results->left->right->right->val.t_val == true);
+    assert(results->left->right->right->type == NODE_VAR);
+    assert(strcmp(results->left->right->right->val.str, "r") == 0);
 
-    yy_scan_string("~(NOT 0 | 0 & 1) <=> 0 & ~0 | ~1");
-    assert(yyparse(&results) == 0);
-    //assert(results == 1);
+    // /*
+    //  *                 <=>  
+    //  *              /        \
+    //  *             ~         '|'
+    //  *             |         / \
+    //  *            '|'        &  ~
+    //  *            /  \      / \ |
+    //  *            ~   &     p ~ r
+    //  *            |  / \      |
+    //  *            p q   r     q
+    //  *
+    //  *   AST Model in Scheme Code:
+    //  *   (equv 
+    //  *      (not (or (not p)
+    //  *               (and q r)))
+    //  *      (or (and p (not q))
+    //  *          (not r))
+    //  *      )
+    //  *
+    //  *   Assume equv are exits in Scheme.
+    //  */
+    // yy_scan_string("~(NOT p | q & r) <=> p & ~q | ~r");
+    // assert(yyparse(NULL, &results) == 0);
+    // //assert(results == 1);
+
+    /*
+     *             '|'
+     *             / \
+     *            '|' s
+     *            / \
+     *            p  &
+     *              / \
+     *              q  r
+     *
+     *   AST Model in Scheme Code:
+     *   (or 
+     *      (or p (and q r)) 
+     *      s)
+     *
+     */
+    yy_scan_string("p | q & r | s");
+    assert(yyparse(NULL, &results) == 0);
+
+    assert(results->left != NULL);
+    assert(results->right != NULL);
+    assert(results->type == NODE_OP);
+    assert(results->val.op == OP_DISJ);
+
+    assert(results->right->left == NULL);
+    assert(results->right->right == NULL);
+    assert(results->right->type == NODE_VAR);
+    assert(strcmp(results->right->val.str, "s") == 0);
+
+    assert(results->left->left != NULL);
+    assert(results->left->right != NULL);
+    assert(results->left->type == NODE_OP);
+    assert(results->left->val.op == OP_DISJ);
+
+    assert(results->left->left->left == NULL);
+    assert(results->left->left->right == NULL);
+    assert(results->left->left->type == NODE_VAR);
+    assert(strcmp(results->left->left->val.str, "p") == 0);
+
+    assert(results->left->right->left != NULL);
+    assert(results->left->right->right != NULL);
+    assert(results->left->right->type == NODE_OP);
+    assert(results->left->right->val.op == OP_CONJ);
+
+    assert(results->left->right->left->left == NULL);
+    assert(results->left->right->left->left == NULL);
+    assert(results->left->right->left->type == NODE_VAR);
+    assert(strcmp(results->left->right->left->val.str, "q") == 0);
+
+    assert(results->left->right->right->left == NULL);
+    assert(results->left->right->right->left == NULL);
+    assert(results->left->right->right->type == NODE_VAR);
+    assert(strcmp(results->left->right->right->val.str, "r") == 0);
 
     /*
      *             '|'
      *             / \
      *            '|' 0
      *            / \
-     *            0  &
+     *            p  &
      *              / \
      *              0  1
      *
      *   AST Model in Scheme Code:
      *   (or 
-     *      (or 
-     *          0 
-     *          (and 0 1)
-     *      ) 
-     *      0
-     *    )
+     *      (or p (and #f #t)) 
+     *      #f)
      *
      */
-    yy_scan_string("0 | 0 & 1 | 0");
-    assert(yyparse(&results) == 0);
+    yy_scan_string("p | 0 & 1 | 0");
+    assert(yyparse(NULL, &results) == 0);
 
     assert(results->left != NULL);
     assert(results->right != NULL);
@@ -433,8 +495,8 @@ void precedence_operation_test() {
 
     assert(results->left->left->left == NULL);
     assert(results->left->left->right == NULL);
-    assert(results->left->left->type == NODE_CONST);
-    assert(results->left->left->val.t_val == false);
+    assert(results->left->left->type == NODE_VAR);
+    assert(strcmp(results->left->left->val.str, "p") == 0);
 
     assert(results->left->right->left != NULL);
     assert(results->left->right->right != NULL);
