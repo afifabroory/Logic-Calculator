@@ -3,29 +3,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <assert.h>
 
 extern int yylex();
 extern void yy_scan_string(const char *str);
-extern void yyerror(Node **tree, const char *s);
+extern void yyerror(int *results, Node **tree, const char *s);
+
+bool directlyEval = true;
 %}
 
-%parse-param {Node **tree}
+%code requires { bool directlyEval; }
+
+%parse-param {int *results} {Node **tree}
 %define parse.error verbose
 
 %union { 
     Node *AST; 
     bool t_val;
-    const char *id;
+    char *id;
 }
 
 %token EQUV IMP IF THEN
 %token DISJ CONJ
 %token NEG CONST VAR
 
-%type <AST> Equivalance Implication Disjunction Conjunction Negation Atomic
-%type <t_val> CONST
 %type <id> VAR
+%type <t_val> CONST
 
 %left IMP EQUV
 %nonassoc IF THEN
@@ -33,35 +35,59 @@ extern void yyerror(Node **tree, const char *s);
 %nonassoc NEG
 
 %%
-Formula    : Equivalance                  { *tree = $1; }
+Formula    : Equivalance                  { 
+                if (directlyEval) *results = $<t_val>1;
+                else *tree = $<AST>1; 
+              }
            ;
 
-Equivalance: Equivalance EQUV Implication { $$ = CreateOptNode(OP_EQUV, $1, $3); }
+Equivalance: Equivalance EQUV Implication {  
+                if (directlyEval) $<t_val>$ = (!$<t_val>1 || $<t_val>3) && ($<t_val>1 || !$<t_val>3);
+                else $<AST>$ = CreateOptNode(OP_EQUV, $<AST>1, $<AST>3); 
+              }
            | Implication
            ;
 
-Implication: Implication IMP Disjunction  { $$ = CreateOptNode(OP_IMP, $1, $3); }
+Implication: Implication IMP Disjunction  { 
+                if (directlyEval) $<t_val>$ = !$<t_val>1 || $<t_val>3;
+                else $<AST>$ = CreateOptNode(OP_IMP, $<AST>1, $<AST>3); 
+              }
            | Disjunction
            ;
 
-Disjunction: Disjunction DISJ Conjunction { $$ = CreateOptNode(OP_DISJ, $1, $3); }
+Disjunction: Disjunction DISJ Conjunction { 
+                if (directlyEval) $<t_val>$ = $<t_val>1 || $<t_val>3;
+                else $<AST>$ = CreateOptNode(OP_DISJ, $<AST>1, $<AST>3); 
+              }
            | Conjunction
            ;
 
-Conjunction: Conjunction CONJ Negation       { $$ = CreateOptNode(OP_CONJ, $1, $3); }
+Conjunction: Conjunction CONJ Negation    { 
+                if (directlyEval) $<t_val>$ = $<t_val>1 && $<t_val>3; 
+                else $<AST>$ = CreateOptNode(OP_CONJ, $<AST>1, $<AST>3); 
+              }
            | Negation
            ;
 
-Negation   : NEG Negation                   { $$ = CreateOptNode(OP_NEG, $2, NULL); }
+Negation   : NEG Negation                 { 
+                if (directlyEval) $<t_val>$ = !$<t_val>2;
+                else $<AST>$ = CreateOptNode(OP_NEG, $<AST>2, NULL); 
+              }
            | Atomic
            ;
 
-Atomic     : VAR                          { $$ = CreateVarNode($1); }
-           | CONST                        { $$ = CreateConstNode($1); }
-           | '(' Equivalance ')'          { $$ = $2; }
+Atomic     : VAR                          { $<AST>$ = CreateVarNode($1); }
+           | CONST                        { 
+                if (directlyEval) $<t_val>$ = $1; 
+                else $<AST>$ = CreateConstNode($1); 
+              }
+           | '(' Equivalance ')'          { 
+                if (directlyEval) $<t_val>$ = $<t_val>2; 
+                else $<AST>$ = $<AST>2;
+              }
            ;
 %%
 
-void yyerror(Node **tree, char const *s) {
+void yyerror(int *results, Node **tree, char const *s) {
   fprintf(stderr, "%s\n", s);
 }

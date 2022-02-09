@@ -58,7 +58,7 @@ IGNORE_TOKEN        .
 
 {FALSE}             { yylval.t_val = false; return CONST; }
 
-{VAR}               { yylval.id = yytext; return VAR; }
+{VAR}               { directlyEval = false; yylval.id = strdup(yytext); return VAR; }
 
 {DIGIT}             /* Ignore */
 {WHITESPACE}        /* Ignore */
