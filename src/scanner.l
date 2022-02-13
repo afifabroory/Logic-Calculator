@@ -1,6 +1,7 @@
 %{
 #include "ast.h"
 #include "y.tab.h"
+#include "symbol_table.h"
 %}
 
 %option caseless
@@ -58,7 +59,14 @@ IGNORE_TOKEN        .
 
 {FALSE}             { yylval.t_val = false; return CONST; }
 
-{VAR}               { directlyEval = false; yylval.id = strdup(yytext); return VAR; }
+{VAR}               { 
+        if (directlyEval) directlyEval = false;
+        char *name = strdup(yytext);
+        yylval.id = name;
+        add_var(name);
+
+        return VAR; 
+    }
 
 {DIGIT}             /* Ignore */
 {WHITESPACE}        /* Ignore */

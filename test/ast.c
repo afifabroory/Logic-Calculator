@@ -1,3 +1,5 @@
+// Parser only produce AST when Propositonal Logic consists of variable 
+
 #include "../src/ast.h"
 #include "../src/y.tab.h"
 

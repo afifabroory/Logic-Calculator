@@ -1,5 +1,5 @@
-#ifndef _TREE_H
-#define _TREE_H
+#ifndef AST_H
+#define AST_H
 
 #include <stdbool.h>
 #include <stdlib.h>
