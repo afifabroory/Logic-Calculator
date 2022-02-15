@@ -22,7 +22,7 @@ Node *CreateConstNode(bool value) {
     return t_node;
 }
 
-Node *CreateVarNode(const char *_str) {
+Node *CreateVarNode(char *_str) {
     Node *t_node = malloc(sizeof(Node));
     t_node->type = NODE_VAR;
     t_node->val.str = _str;

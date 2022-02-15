@@ -4,6 +4,13 @@
 
 Hash *var_table = NULL;
 
+void get_list_var(char *list[]) {
+    Hash *var;
+
+    unsigned cnt = 0;
+    for (var = var_table; var != NULL; var = var->hh.next) list[cnt++] = strdup(var->name);
+}
+
 void add_var(char *s) {
     Hash *var;
 

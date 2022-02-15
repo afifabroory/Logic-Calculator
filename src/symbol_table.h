@@ -15,6 +15,7 @@ typedef struct _Hash Hash;
 extern Hash *var_table;
 
 void add_var(char *s);
+void get_list_var(char *list[]);
 bool lookup_context(char *s);
 void replace_context(char *s, bool ctx);
 unsigned count_var();

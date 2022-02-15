@@ -5,25 +5,25 @@
 #include <stdlib.h>
 
 typedef enum {
-    OP_CONJ,
-    OP_DISJ,
-    OP_EQUV,
-    OP_IMP,
-    OP_NEG
-} OPType;
+    NODE_OP = 1 << 0,
+    NODE_VAR = 1 << 1,
+    NODE_CONST = 1 << 2
+} NodeType;
 
 typedef enum {
-    NODE_OP,
-    NODE_VAR,
-    NODE_CONST
-} NodeType;
+    OP_CONJ = 1 << 0,
+    OP_DISJ = 1 << 1,
+    OP_EQUV = 1 << 2,
+    OP_IMP = 1 << 3,
+    OP_NEG = 1 << 4
+} OPType;
 
 struct _Node {
     NodeType type;
     union {
         OPType op;
         bool t_val;
-        const char *str;
+        char *str;
     } val;
     struct _Node *left, *right;
 };
@@ -31,7 +31,7 @@ typedef struct _Node Node;
 
 Node *CreateOptNode(OPType type, Node *left_node, Node *right_node);
 Node *CreateConstNode(bool value);
-Node *CreateVarNode(const char *_str);
+Node *CreateVarNode(char *_str);
 void FreeAST(Node *ast);
 
 #endif
