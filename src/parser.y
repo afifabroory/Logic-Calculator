@@ -12,7 +12,7 @@ extern void yyerror(int *results, Node **tree, const char *s);
 bool directlyEval = true;
 %}
 
-%code requires { bool directlyEval; }
+%code requires { extern bool directlyEval; }
 
 %parse-param {int *results} {Node **tree}
 %define parse.error verbose

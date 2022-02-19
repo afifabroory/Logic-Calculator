@@ -29,9 +29,13 @@ struct _Node {
 };
 typedef struct _Node Node;
 
+extern unsigned total_char;
+
 Node *CreateOptNode(OPType type, Node *left_node, Node *right_node);
 Node *CreateConstNode(bool value);
 Node *CreateVarNode(char *_str);
+bool eval_ast(Node **ast);
+void AstToStr(Node **ast, char *dest);
 void FreeAST(Node *ast);
 
 #endif

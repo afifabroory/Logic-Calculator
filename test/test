@@ -1,6 +1,9 @@
 #!/bin/sh
-gcc -g parser.c ../src/y.tab.c ../src/lex.yy.c ../src/symbol_table.c ../src/ast.c -o parser
-gcc -g ast.c ../src/y.tab.c ../src/lex.yy.c ../src/symbol_table.c ../src/ast.c -o ast
+gcc -DHASH_FUNCTION=HASH_SAX -g -o parser ../src/y.tab.c ../src/lex.yy.c ../src/symbol_table.c ../src/ast.c parser.c
+gcc -DHASH_FUNCTION=HASH_SAX -g -o ast ../src/y.tab.c ../src/lex.yy.c ../src/symbol_table.c ../src/ast.c ast.c
+gcc -DHASH_FUNCTION=HASH_SAX -g -o eval ../src/ast.c ../src/symbol_table.c ../src/propositional_logic.c ../src/y.tab.c ../src/lex.yy.c eval.c
 ./parser
 ./ast
-rm parser ast
+./eval
+rm parser ast eval
+

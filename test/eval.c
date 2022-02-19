@@ -1,6 +1,7 @@
 // Parser only produce AST when Propositonal Logic consists of variable 
 
 #include "../src/ast.h"
+#include "../src/propositional_logic.h"
 #include "../src/symbol_table.h"
 #include "../src/y.tab.h"
 
@@ -39,7 +40,7 @@ int main() {
     var_table = NULL;
     assert(var_table == NULL);
 
-    printf("AST OK!\n");
+    printf("Eval OK!\n");
 }
 
 void constant_remain_constant_test() {
@@ -302,9 +303,8 @@ void precedence_operation_test() {
      */
     yy_scan_string("~p | q & r");
     assert(yyparse(NULL, &results) == 0);
-    // char exp[total_char];
-    // memset(exp, '\0', sizeof exp);
-    // AstToStr(&results, exp);
+
+    generate_truth_table(&results);
     
     assert(results->left != NULL);
     assert(results->right != NULL);
@@ -357,6 +357,8 @@ void precedence_operation_test() {
     yy_scan_string("~(~p | q & r)");
     assert(yyparse(NULL, &results) == 0);
     
+    generate_truth_table(&results);
+
     assert(results->left != NULL);
     assert(results->right == NULL);
     assert(results->type == NODE_OP);
@@ -392,30 +394,32 @@ void precedence_operation_test() {
     assert(results->left->right->right->type == NODE_VAR);
     assert(strcmp(results->left->right->right->val.str, "r") == 0);
 
-    // /*
-    //  *                 <=>  
-    //  *              /        \
-    //  *             ~         '|'
-    //  *             |         / \
-    //  *            '|'        &  ~
-    //  *            /  \      / \ |
-    //  *            ~   &     p ~ r
-    //  *            |  / \      |
-    //  *            p q   r     q
-    //  *
-    //  *   AST Model in Scheme Code:
-    //  *   (equv 
-    //  *      (not (or (not p)
-    //  *               (and q r)))
-    //  *      (or (and p (not q))
-    //  *          (not r))
-    //  *      )
-    //  *
-    //  *   Assume equv are exits in Scheme.
-    //  */
+    assert(eval_ast(&results) == false);
+
+    /*
+     *                 <=>  
+     *              /        \
+     *             ~         '|'
+     *             |         / \
+     *            '|'        &  ~
+     *            /  \      / \ |
+     *            ~   &     p ~ r
+     *            |  / \      |
+     *            p q   r     q
+     *
+     *   AST Model in Scheme Code:
+     *   (equv 
+     *      (not (or (not p)
+     *               (and q r)))
+     *      (or (and p (not q))
+     *          (not r))
+     *      )
+     *
+     *   Assume equv are exits in Scheme.
+     */
     // yy_scan_string("~(NOT p | q & r) <=> p & ~q | ~r");
     // assert(yyparse(NULL, &results) == 0);
-    // //assert(results == 1);
+    // assert(results == 1);
 
     /*
      *             '|'
@@ -434,6 +438,8 @@ void precedence_operation_test() {
      */
     yy_scan_string("p | q & r | s");
     assert(yyparse(NULL, &results) == 0);
+
+    generate_truth_table(&results);
 
     assert(results->left != NULL);
     assert(results->right != NULL);
@@ -470,6 +476,8 @@ void precedence_operation_test() {
     assert(results->left->right->right->type == NODE_VAR);
     assert(strcmp(results->left->right->right->val.str, "r") == 0);
 
+    free_hash();
+
     /*
      *             '|'
      *             / \
@@ -485,41 +493,8 @@ void precedence_operation_test() {
      *      #f)
      *
      */
-    yy_scan_string("p | 0 & 1 | 0");
+    yy_scan_string("p | q & 1 | r");
     assert(yyparse(NULL, &results) == 0);
 
-    assert(results->left != NULL);
-    assert(results->right != NULL);
-    assert(results->type == NODE_OP);
-    assert(results->val.op == OP_DISJ);
-
-    assert(results->right->left == NULL);
-    assert(results->right->right == NULL);
-    assert(results->right->type == NODE_CONST);
-    assert(results->right->val.t_val == false);
-
-    assert(results->left->left != NULL);
-    assert(results->left->right != NULL);
-    assert(results->left->type == NODE_OP);
-    assert(results->left->val.op == OP_DISJ);
-
-    assert(results->left->left->left == NULL);
-    assert(results->left->left->right == NULL);
-    assert(results->left->left->type == NODE_VAR);
-    assert(strcmp(results->left->left->val.str, "p") == 0);
-
-    assert(results->left->right->left != NULL);
-    assert(results->left->right->right != NULL);
-    assert(results->left->right->type == NODE_OP);
-    assert(results->left->right->val.op == OP_CONJ);
-
-    assert(results->left->right->left->left == NULL);
-    assert(results->left->right->left->left == NULL);
-    assert(results->left->right->left->type == NODE_CONST);
-    assert(results->left->right->left->val.t_val == false);
-
-    assert(results->left->right->right->left == NULL);
-    assert(results->left->right->right->left == NULL);
-    assert(results->left->right->right->type == NODE_CONST);
-    assert(results->left->right->right->val.t_val == true);
+    generate_truth_table(&results);
 }

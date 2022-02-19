@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "symbol_table.h"
+#include <stdio.h>
 
 // https://stackoverflow.com/questions/101439/the-most-efficient-way-to-implement-an-integer-based-power-function-powint-int
 unsigned exp_of_two(unsigned exp) {
@@ -18,32 +19,26 @@ unsigned exp_of_two(unsigned exp) {
     return result;
 }
 
-bool eval_ast(Node **node) {
-    if ((*node)->type == NODE_VAR) return lookup_context((*node)->val.str);
-    else if ((*node)->type == NODE_OP) {
-        bool left, right; 
-
-        left = eval_ast(&((*node)->left));
-        if ((*node)->val.op & 0xF) right = eval_ast(&((*node)->right));
-
-        switch ((*node)->val.op) {
-            case OP_CONJ : return left && right;
-            case OP_DISJ : return left || right;
-            case OP_EQUV : return (!left || right) && (left || !right);
-            case OP_IMP : return !left || right;
-            case OP_NEG : return !left;
-        }
-    }
-    return (*node)->val.t_val;
-}
-
 void generate_truth_table(Node **node) {
-    
+    char readable_exp[total_char];
+    memset(readable_exp, '\0', sizeof readable_exp);
+    AstToStr(&(*node), readable_exp);
+
+    // Space between var column and expression column
+    char space[(strlen(readable_exp)+1)/2+1];
+    memset(space, '\0', sizeof space);
+    for (int i = 0; i < (strlen(readable_exp)+1)/2; i++) space[i] = ' ';
+
     unsigned num_of_vars = count_var();
     unsigned num_of_row = exp_of_two(num_of_vars);
 
     char *var_list[num_of_vars];
     get_list_var(*&var_list);
+
+    // Print var
+    for (unsigned i = 0; i < num_of_vars; i++) printf("%s ", var_list[i]);
+    printf("%s", readable_exp); // print expression
+    printf("\n");
 
     unsigned k, context;
     for (unsigned i = 0; i < num_of_row; i++) {
@@ -51,7 +46,12 @@ void generate_truth_table(Node **node) {
         for (unsigned j = 0; j < num_of_vars; j++) {
             context = (i >> --k) & 1;
             replace_context(var_list[j], context);
+            printf("%s ", context ? "T" : "F");
         }
-        eval_ast(node);
+        printf("%s", space);
+        printf("%s\n", eval_ast(node) ? "T" : "F");
     }
+
+    printf("\n");
+    total_char = 0;
 }
